@@ -7,7 +7,7 @@ package cih;
 import cgt.App;
 import java.awt.Graphics;
 import java.awt.Image;
-//import javax.swing.ImageIcon;
+/*import javax.swing.ImageIcon;*/
 import javax.swing.JComponent;
 
 class ImagePanel extends JComponent {
