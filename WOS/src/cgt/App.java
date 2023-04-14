@@ -4,12 +4,15 @@
  */
 package cgt;
 
-import cih.Cadastrar;
-import cih.Campanha;
-import cih.Home;
-import cih.Login;
-import cih.Loja;
-import cih.Time;
+import cih.*;
+
+//import cih.Cadastrar;
+//import cih.Campanha;
+//import cih.Home;
+//import cih.Login;
+//import cih.Loja;
+//import cih.Partida;
+//import cih.Time;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
@@ -45,13 +48,14 @@ public class App {
     private Loja dlgLoja = null;
     private Time dlgTime = null;
     private Campanha janCampanha = null;
+    private Partida dlgPartida = null;
     
     // Controle de Tamanho de Tela
     private final Toolkit tk = Toolkit.getDefaultToolkit();
     private final Dimension screenSize = tk.getScreenSize();
 
     public void janelaPrincipal() {
-        janLogin = new Login(this);
+        janLogin = Login.getInstance(this);
         janLogin.setVisible(true);
         janLogin.setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
@@ -75,6 +79,15 @@ public class App {
     public void janelaCampanha() {
         janCampanha = (Campanha) trocarJanela(janHome, janCampanha, Campanha.class);
     }
+    
+    public void janelaPartida() {
+        dlgPartida = (Partida) abrirJanela(janHome, dlgPartida, Partida.class);
+    }
+    
+    public void janelaFechar() {
+        System.exit(0);
+    }
+
 
     // ABRIR JDIALOG
     private JDialog abrirJanela(java.awt.Frame parent, JDialog dlg, Class classe) {

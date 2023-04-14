@@ -1,6 +1,6 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+* Projeto de Programação Orientada a Objetos
+* AUTOR: Henrique Almeida de Oliveira
  */
 package cih;
 
@@ -13,14 +13,22 @@ import cgt.App;
 public class Login extends javax.swing.JFrame {
 
     private final App gerenteUI;
+    private static Login login;
     
     /**
      * Creates new form Login
      * @param gerenteUI
      */
-    public Login(App gerenteUI) {
+    private Login(App gerenteUI) {
         initComponents();
         this.gerenteUI = gerenteUI;
+    }
+    
+    public static Login getInstance(App gerenteUI){
+        if (login==null){
+            login = new Login(gerenteUI);
+        }
+        return login;
     }
 
     /**
@@ -121,7 +129,7 @@ public class Login extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 45, Short.MAX_VALUE)
+                        .addGap(0, 41, Short.MAX_VALUE)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 33, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
