@@ -4,10 +4,17 @@
  */
 package cih;
 
+import cdp.CampaignMatch;
+import cdp.Creature;
+import cdp.Match;
 import cgt.App;
-import static java.lang.Thread.sleep;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.util.Date;
+import java.util.List;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 /**
@@ -17,6 +24,8 @@ import javax.swing.JOptionPane;
 public class Partida extends javax.swing.JDialog {
 
     private final App gerenteUI;
+    private final Toolkit tk = Toolkit.getDefaultToolkit();
+    private final Dimension screenSize = tk.getScreenSize();
 
     /**
      * Creates new form Partida
@@ -32,6 +41,57 @@ public class Partida extends javax.swing.JDialog {
 
     }
 
+    public void checkScreen() {
+        this.setSize(screenSize);
+        this.setTitle("War of the Spark: Campanha " + (gerenteUI.getIdCampaign() + 1));
+
+        JLabel label = new JLabel(gerenteUI.PathImageGetter("battle"));
+        label.setBounds(0, 0, this.getWidth(), this.getHeight());
+        this.getContentPane().add(label);
+
+        jMsgOut.setText("Clique aqui para voltar para tela de Campanhas");
+        jMsgOut.setBackground(Color.GRAY);
+        jMsgOut.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        int jLogWidth = (int) (screenSize.getWidth()-250);
+        int jLogHeight = (int) screenSize.getHeight()-75;
+        jLabelLog.setSize(jLogWidth, jLogHeight);
+
+        StringBuilder mensagem = new StringBuilder();
+        String output = "Sentimos muito, mas a parte gráfica da batalha não foi implementada."
+                + "\n"
+                + "Apesar disso,  você pode obter os resultados da partida em seu histórico normalmente.";
+        mensagem.append(output);
+        JOptionPane.showMessageDialog(null, mensagem);
+
+        loadMatch();
+    }
+
+    private void loadMatch() {
+        int pId = gerenteUI.getIdCampaign();
+
+        CampaignMatch camp = gerenteUI.getGerDominio().findCampaigns().get(pId);
+        List<Creature> enemy = camp.getTeam();
+        System.out.println(enemy);
+
+        List<Creature> hero = gerenteUI.getGerDominio().findTeam(gerenteUI.getPlayer().getId()).get(0).getTeamA();
+        System.out.println(hero);
+
+        Match match = new Match(hero, enemy, new Date(), gerenteUI.getPlayer());
+
+        int newCurrency = (match.calculate() * (pId + 1)) * 5 + gerenteUI.getPlayer().getCurrency();
+        jLabelLog.setUI(MultiLineLabelUI.labelUI);
+        jLabelLog.setText(match.getLog());
+        if (match.isVictory()) {
+            jLabelWinner.setText("Heróis Venceram!");
+        } else {
+            jLabelWinner.setText("Inimigos Venceram!");
+        }
+        gerenteUI.getGerDominio().insertMatch(match);
+        gerenteUI.getPlayer().setCurrency(newCurrency);
+        gerenteUI.getGerDominio().updatePlayer(gerenteUI.getPlayer());
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -42,70 +102,90 @@ public class Partida extends javax.swing.JDialog {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jLabelLog = new javax.swing.JLabel();
+        jMsgOut = new javax.swing.JLabel();
+        jLabelWinner = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel2.setText("jLabelPartida");
+        jScrollPane1.setBorder(null);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(24, 24, 24)
-                .addComponent(jLabel2)
-                .addContainerGap(1026, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(29, Short.MAX_VALUE)
-                .addComponent(jLabel2)
-                .addGap(24, 24, 24))
-        );
+        jLabelLog.setText("jLabel1");
+        jScrollPane1.setViewportView(jLabelLog);
+
+        jMsgOut.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
+        jMsgOut.setText("jLabelPartida");
+        jMsgOut.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jMsgOutMouseClicked(evt);
+            }
+        });
+
+        jLabelWinner.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
+        jLabelWinner.setText("jLabel1");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 476, Short.MAX_VALUE)
+                        .addComponent(jMsgOut)
+                        .addGap(0, 477, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabelWinner)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 579, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(jLabelWinner)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jMsgOut, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(50, 50, 50)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(200, 200, 200))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(25, 25, 25)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(50, 50, 50))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jMsgOutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jMsgOutMouseClicked
+        // TODO add your handling code here:
+        this.setVisible(false);
+    }//GEN-LAST:event_jMsgOutMouseClicked
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabelLog;
+    private javax.swing.JLabel jLabelWinner;
+    private javax.swing.JLabel jMsgOut;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
-    private void chatch() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 }

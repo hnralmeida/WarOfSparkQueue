@@ -4,9 +4,15 @@
  */
 package cih;
 
+import cdp.Player;
 import cgt.App;
-import cgt.imageRender.ImageGetter;
-import cgt.imageRender.PathImageGetter;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -15,16 +21,38 @@ import cgt.imageRender.PathImageGetter;
 public class Login extends javax.swing.JFrame {
 
     private final App gerenteUI;
-    
+
+    private static Login instance;
+    private final Toolkit tk = Toolkit.getDefaultToolkit();
+    private final Dimension screenSize = tk.getScreenSize();
+
     /**
      * Creates new form Login
+     *
      * @param gerenteUI
      */
-    public Login(App gerenteUI) {
+    private Login(App gerenteUI) {
         initComponents();
-        ImageGetter p = new PathImageGetter();
         this.gerenteUI = gerenteUI;
     }
+
+    public void checkScreen() {
+        this.setSize(screenSize);
+        this.setExtendedState(Frame.MAXIMIZED_BOTH);
+
+        JLabel label = new JLabel(gerenteUI.PathImageGetter("app-bg-no"));
+        label.setBounds(0, 0, this.getWidth(), this.getHeight());
+        this.getContentPane().add(label);
+    }
+
+    public static Login getInstance(App gerenteUI) {
+        if (instance != null) {
+            return instance;
+        } else {
+            return new Login(gerenteUI);
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -41,17 +69,16 @@ public class Login extends javax.swing.JFrame {
         jPassword = new javax.swing.JPasswordField();
         jLabUser = new javax.swing.JLabel();
         jLabPass = new javax.swing.JLabel();
-        jLabNovo = new javax.swing.JLabel();
+        jLabelCadastro = new javax.swing.JLabel();
+        jLabelAlert = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("War of Spark");
         setBackground(new java.awt.Color(249, 249, 249));
         setBounds(new java.awt.Rectangle(0, 0, 0, 0));
         setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        setMaximumSize(new java.awt.Dimension(1080, 720));
         setMinimumSize(new java.awt.Dimension(1080, 720));
         setName("Login"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(1080, 720));
         setSize(new java.awt.Dimension(1080, 720));
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("LOGIN\n"));
@@ -70,7 +97,13 @@ public class Login extends javax.swing.JFrame {
             }
         });
 
-        jLabUser.setText("Usuário");
+        jPassword.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jPasswordActionPerformed(evt);
+            }
+        });
+
+        jLabUser.setText("Email");
 
         jLabPass.setText("Senha");
 
@@ -108,10 +141,11 @@ public class Login extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jLabNovo.setText("Novo cadastro");
-        jLabNovo.addMouseListener(new java.awt.event.MouseAdapter() {
+        jLabelCadastro.setText("Novo cadastro");
+        jLabelCadastro.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabelCadastro.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                handleClickjLabNovo(evt);
+                handleClickjLabelCadastro(evt);
             }
         });
 
@@ -127,7 +161,7 @@ public class Login extends javax.swing.JFrame {
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 33, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabNovo)
+                        .addComponent(jLabelCadastro)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -137,7 +171,7 @@ public class Login extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabNovo)
+                .addComponent(jLabelCadastro)
                 .addContainerGap())
         );
 
@@ -147,39 +181,64 @@ public class Login extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(395, Short.MAX_VALUE)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabelAlert, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(395, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(194, Short.MAX_VALUE)
+                .addContainerGap(202, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(233, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabelAlert, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(183, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtEntrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtEntrarActionPerformed
-        // TODO add your handling code here:
-        gerenteUI.janelaHome();
+        String email = jTextLogin.getText();
+        String token = new String(jPassword.getPassword());
+        Player user = gerenteUI.getGerDominio().findPlayer(email, token);
+        if (user != null) {
+            System.out.println(user);
+            gerenteUI.setPlayer(user);
+            gerenteUI.janelaPrincipal();
+        } else {
+            jLabelAlert.setText("Crendeciais Incorretas");
+            jLabelAlert.setVisible(true);
+            jLabelAlert.setForeground(Color.red);
+            jLabelAlert.setHorizontalAlignment(SwingConstants.CENTER);
+        }
     }//GEN-LAST:event_jButtEntrarActionPerformed
 
-    private void handleClickjLabNovo(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_handleClickjLabNovo
+    private void handleClickjLabelCadastro(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_handleClickjLabelCadastro
         // TODO add your handling code here:
         gerenteUI.janelaCadastro();
-    }//GEN-LAST:event_handleClickjLabNovo
+    }//GEN-LAST:event_handleClickjLabelCadastro
+
+    private void jPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordActionPerformed
+        // TODO add your handling code here:
+        jButtEntrarActionPerformed(evt);
+    }//GEN-LAST:event_jPasswordActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtEntrar;
-    private javax.swing.JLabel jLabNovo;
     private javax.swing.JLabel jLabPass;
     private javax.swing.JLabel jLabUser;
+    private javax.swing.JLabel jLabelAlert;
+    private javax.swing.JLabel jLabelCadastro;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPasswordField jPassword;
     private javax.swing.JTextField jTextLogin;
     // End of variables declaration//GEN-END:variables
+
+    private void jButtEntrarActionPerformed(KeyEvent evt) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

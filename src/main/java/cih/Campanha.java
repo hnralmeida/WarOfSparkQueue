@@ -4,26 +4,29 @@
  */
 package cih;
 
+import cdp.*;
 import cgt.App;
-import java.awt.Graphics;
-import java.awt.Image;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 //import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-
-class ImagePanel extends JComponent {
-
-    private final Image image;
-
-    public ImagePanel(Image image) {
-        this.image = image;
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        g.drawImage(image, 0, 0, this);
-    }
-}
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import org.hibernate.HibernateException;
 
 /**
  *
@@ -32,6 +35,9 @@ class ImagePanel extends JComponent {
 public class Campanha extends javax.swing.JFrame {
 
     private final App gerenteUI;
+    private static Campanha instance;
+    private final Toolkit tk = Toolkit.getDefaultToolkit();
+    private final Dimension screenSize = tk.getScreenSize();
 
     /**
      * Creates new form Home
@@ -40,11 +46,88 @@ public class Campanha extends javax.swing.JFrame {
      * @param modal
      * @param gerenteUI
      */
-    public Campanha(java.awt.Frame parent, boolean modal, App gerenteUI) {
+    private Campanha(App gerenteUI) {
         initComponents();
         this.gerenteUI = gerenteUI;
-        // ImageIcon reff = new ImageIcon("data\\bg-home.jpg");
-        //this.setContentPane(new ImagePanel(reff.getImage()));
+    }
+
+    public static Campanha getInstance(java.awt.Frame parent, App gerenteUI) {
+        parent.setVisible(false);
+        if (instance != null) {
+            return instance;
+        } else {
+            return new Campanha(gerenteUI);
+        }
+    }
+
+    public void checkScreen() {
+        this.setSize(screenSize);
+        this.setTitle("War of the Spark");
+        this.setExtendedState(Frame.MAXIMIZED_BOTH);
+
+        JLabel label = new JLabel(gerenteUI.PathImageGetter("app-bg-no"));
+        label.setBounds(0, 0, this.getWidth(), this.getHeight());
+        this.getContentPane().add(label);
+        jBStart.setVisible(false);
+
+        jLabelBack.setIcon(gerenteUI.PathImageGetter("app-back-50"));
+        jLabelBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        //jLabelTitle.setVerticalAlignment((int) CENTER_ALIGNMENT);
+        Color transp = new Color(200, 200, 200, 1);
+        Topbar.setBackground(transp);
+        jTableCampanhas.sizeColumnsToFit(-1);
+
+        try {
+            Player p = gerenteUI.getPlayer();
+            loadCampaigns(p);
+        } catch (ClassNotFoundException | SQLException error) {
+            System.out.println(error.getCause());
+        }
+        this.dispose();
+    }
+
+    public void setSelectedRoom(int selectedRoom) {
+        this.gerenteUI.setIdCampaign(selectedRoom);
+        this.jBStart.setVisible(true);
+        this.jBStart.setText("Jogar Partida " + (selectedRoom + 1));
+    }
+
+    private void loadCampaigns(Player p) throws ClassNotFoundException, SQLException {
+        List<CampaignMatch> lista;
+        Campanha reff = this;
+
+        try {
+            ((DefaultTableModel) jTableCampanhas.getModel()).setNumRows(0);
+            lista = gerenteUI.getGerDominio().findCampaigns();
+
+            Action battle = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        int index = Integer.parseInt(e.getActionCommand());
+                        gerenteUI.getGerDominio().findCampaigns().get(index);
+                        System.out.println("Campanha: " + index);
+                        reff.setSelectedRoom(index);
+                    } catch (NumberFormatException | HibernateException ex) {
+                        Logger.getLogger(Time.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            };
+
+            ButtonColumn buttonColumn = new ButtonColumn(jTableCampanhas, battle, 3);
+            buttonColumn.setMnemonic(KeyEvent.VK_D);
+
+            for (CampaignMatch camp : lista) {
+                // CRIAR uma linha em branco 
+                List<Object> line = new ArrayList<>(Arrays.asList(camp.toArray()));
+                line.add("Selecionar Batalha " + camp.getPosition());
+                ((DefaultTableModel) jTableCampanhas.getModel()).addRow(line.toArray());
+            }
+
+        } catch (ParseException ex) {
+            Logger.getLogger(Campanha.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -56,25 +139,63 @@ public class Campanha extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        Topbar = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
-        jButtBack = new javax.swing.JButton();
+        jBStart = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
+        Campanhas = new javax.swing.JPanel();
+        jScrollPane = new javax.swing.JScrollPane();
+        jTableCampanhas = new javax.swing.JTable();
+        Topbar = new javax.swing.JPanel();
+        jLabelBack = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
+        jButtonReport = new javax.swing.JToggleButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jLabel5.setFont(new java.awt.Font("Yu Gothic Light", 0, 36)); // NOI18N
-        jLabel5.setText("Mapa de Campanha");
-        jLabel5.setAlignmentY(0.0F);
-
-        jButtBack.setBackground(new java.awt.Color(249, 249, 249));
-        jButtBack.addActionListener(new java.awt.event.ActionListener() {
+        jBStart.setText("jButton1");
+        jBStart.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtBackActionPerformed(evt);
+                jBStartActionPerformed(evt);
+            }
+        });
+
+        jTableCampanhas.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Posição", "Nome", "Criaturas", "Batalhar"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Integer.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, true
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane.setViewportView(jTableCampanhas);
+
+        jLabelBack.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabelBackMouseClicked(evt);
+            }
+        });
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
+        jLabel1.setText("Campanhas");
+
+        jButtonReport.setText("Histórico");
+        jButtonReport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonReportActionPerformed(evt);
             }
         });
 
@@ -83,73 +204,67 @@ public class Campanha extends javax.swing.JFrame {
         TopbarLayout.setHorizontalGroup(
             TopbarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(TopbarLayout.createSequentialGroup()
-                .addGap(8, 8, 8)
-                .addComponent(jButtBack)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel5)
-                .addContainerGap(511, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(jLabelBack, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 697, Short.MAX_VALUE)
+                .addComponent(jButtonReport)
+                .addGap(23, 23, 23))
         );
         TopbarLayout.setVerticalGroup(
             TopbarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(TopbarLayout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(TopbarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButtBack, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(TopbarLayout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addContainerGap()
+                        .addGroup(TopbarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabelBack, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(TopbarLayout.createSequentialGroup()
+                        .addGap(17, 17, 17)
+                        .addComponent(jButtonReport)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel1MouseClicked(evt);
-            }
-        });
-
-        jLabel6.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel6MouseClicked(evt);
-            }
-        });
-
-        jLabel7.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel7MouseClicked(evt);
-            }
-        });
-
-        jLabel8.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel8MouseClicked(evt);
-            }
-        });
+        javax.swing.GroupLayout CampanhasLayout = new javax.swing.GroupLayout(Campanhas);
+        Campanhas.setLayout(CampanhasLayout);
+        CampanhasLayout.setHorizontalGroup(
+            CampanhasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(CampanhasLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 919, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, CampanhasLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(Topbar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        CampanhasLayout.setVerticalGroup(
+            CampanhasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(CampanhasLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Topbar, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                .addContainerGap(63, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel6)
-                .addGap(133, 133, 133)
-                .addComponent(jLabel1)
-                .addGap(133, 133, 133)
-                .addComponent(jLabel7)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 133, Short.MAX_VALUE)
-                .addComponent(jLabel8)
-                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(Campanhas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel8)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel1))
-                .addGap(15, 15, 15))
+                .addComponent(Campanhas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(10, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -157,64 +272,56 @@ public class Campanha extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(Topbar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(113, 113, 113)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jBStart, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Topbar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 213, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(209, 209, 209))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jBStart, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButtBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtBackActionPerformed
+    private void jLabelBackMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabelBackMouseClicked
         // TODO add your handling code here:
-        this.setVisible(false);
         gerenteUI.janelaHome();
-    }//GEN-LAST:event_jButtBackActionPerformed
+        this.setVisible(false);
+    }//GEN-LAST:event_jLabelBackMouseClicked
 
-    private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
+    private void jBStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBStartActionPerformed
         // TODO add your handling code here:
         gerenteUI.janelaPartida();
-    }//GEN-LAST:event_jLabel1MouseClicked
+    }//GEN-LAST:event_jBStartActionPerformed
 
-    private void jLabel6MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel6MouseClicked
+    private void jButtonReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonReportActionPerformed
         // TODO add your handling code here:
-        gerenteUI.janelaPartida();
-    }//GEN-LAST:event_jLabel6MouseClicked
-
-    private void jLabel7MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel7MouseClicked
-        // TODO add your handling code here:
-        gerenteUI.janelaPartida();
-
-    }//GEN-LAST:event_jLabel7MouseClicked
-
-    private void jLabel8MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel8MouseClicked
-        // TODO add your handling code here:
-        gerenteUI.janelaPartida();
-
-    }//GEN-LAST:event_jLabel8MouseClicked
+        try {
+            List campmatch = gerenteUI.getGerDominio().findMatchByPlayer(gerenteUI.getPlayer());
+            campmatch.add(gerenteUI.getGerDominio().findAllCreatures(gerenteUI.getPlayer().getId()));
+            gerenteUI.getReportController().relComLista(campmatch, "MatchHistory.jasper");
+        } catch (HibernateException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "ERRO", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_jButtonReportActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel Campanhas;
     private javax.swing.JPanel Topbar;
-    private javax.swing.JButton jButtBack;
+    private javax.swing.JButton jBStart;
+    private javax.swing.JToggleButton jButtonReport;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabelBack;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane;
+    private javax.swing.JTable jTableCampanhas;
     // End of variables declaration//GEN-END:variables
 }
